@@ -12,3 +12,7 @@
 #controls {
     margin-top: 10px;
 }
+
+#gridCanvas{
+    border: 1px solid black;
+}
