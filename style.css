@@ -1,0 +1,14 @@
+#canvasContainer {
+    width: 800px;
+    height: 500px;
+    border: 1px solid black;
+    overflow: auto;
+    position: relative;
+}
+#canvas {
+    cursor: crosshair;
+    position: absolute; /* Ensure the canvas can be dynamically resized */
+}
+#controls {
+    margin-top: 10px;
+}
