@@ -35,6 +35,7 @@ var prevEncoderRight = 0;
 var wheelBase = 400; // Adjust as needed
 
 function toggleWebSocket() {
+    var ip = document.getElementById("ipAddress").value;
     if (isConnected) {
         // Close the WebSocket connection
         isError = false;
@@ -42,13 +43,13 @@ function toggleWebSocket() {
         
     } else {
         // Open the WebSocket connection
-        startWebSocket();
+        startWebSocket(ip);
     }
 }
 
-function startWebSocket() {
+function startWebSocket(ip) {
     // Connect to the WebSocket server
-    webSocket = new WebSocket("ws://192.168.0.102:81");
+    webSocket = new WebSocket(`ws://${ip}:81`);
 
     connectionTimeout = setTimeout(function() {
         if (webSocket.readyState !== WebSocket.OPEN) {
@@ -81,8 +82,6 @@ function startWebSocket() {
         while (valueQueue.length > cols * rows) {
             valueQueue.shift();
         }
-
-        
 
         if (data.Encoder1 !== undefined && data.Encoder2 !== undefined) {
             updatePosition(data.Encoder1, data.Encoder2);
@@ -235,12 +234,12 @@ function normalizeValue(value) {
 
 function updateGrid() {
     // Clear the canvas
-    ctx.clearRect(0, 0, gridcanvas.width, gridcanvas.height);
+    gctx.clearRect(0, 0, gridcanvas.width, gridcanvas.height);
 
     // Iterate over the queue and draw the cells
     for (let i = 0; i < valueQueue.length; i++) {
         let col = i % cols;
-        let row = Math.floor(i / cols);
+        let row = rows-1-Math.floor(i / cols);
 
         let intensity = normalizeValue(valueQueue[i]);
         let color = `rgb(${intensity}, ${intensity}, ${intensity})`;
