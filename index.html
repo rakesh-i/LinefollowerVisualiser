@@ -6,7 +6,7 @@
 </head>
 <body>
     <div>
-        <input type="text" name="ip" id="ipAddress" placeholder="Enter IP Address" value="192.168.0.106" >
+        <input type="text" name="ip" id="ipAddress" placeholder="Enter IP Address" value="192.168.0.100" >
         <button id="toggleButton">Connect</button>
         <span id="status">Disconnected</span>
     </div>
@@ -18,15 +18,21 @@
     <p>Value 4: <span id="value4"></span></p>
     <p>Value 5: <span id="value5"></span></p>
     <p>Value 6: <span id="value6"></span></p> -->
-    <p>Encoder 1: <span id="Encoder1"></span></p>
-    <p>Encoder 2: <span id="Encoder2"></span></p>
-    <div id="canvasContainer">
-        <canvas id="canvas" width="800" height="500"></canvas>
+
+    <div>
+        <div>
+            <p>Encoder 1: <span id="Encoder1"></span></p>
+            <p>Encoder 2: <span id="Encoder2"></span></p>
+        </div>
+        <div id="canvasContainer">
+            <canvas id="canvas"></canvas>
+        </div>
+        <div id="controls">
+            <button id="clearButton">Clear</button>
+            <button id="exportButton">Export as JPEG</button>
+        </div>
     </div>
-    <div id="controls">
-        <button id="clearButton">Clear</button>
-        <button id="exportButton">Export as JPEG</button>
-    </div>
+    
 </body>
 <script src="script.js"></script>
 </html>

@@ -15,9 +15,9 @@ var gctx = gridcanvas.getContext('2d');
 
 // Grid dimensions
 const cols = 5;
-const rows = 50;
+const rows = 100;
 const cellWidth = 100;
-const cellHeight = 10;
+const cellHeight = 5;
 
 // Store the values in a queue
 var valueQueue = [];
@@ -33,6 +33,8 @@ var prevEncoderRight = 0;
 
 // Distance between the wheels (wheelbase)
 var wheelBase = 400; // Adjust as needed
+
+let path = [{x:x, y:y}];
 
 function toggleWebSocket() {
     var ip = document.getElementById("ipAddress").value;
@@ -179,6 +181,8 @@ function updatePosition(encoderLeft, encoderRight) {
     x += d * Math.cos(theta);
     y += d * Math.sin(theta);
 
+    path.push({x: x, y: y});
+
     // Ensure canvas size is sufficient
     adjustCanvasSize();
 
@@ -190,8 +194,13 @@ function updatePosition(encoderLeft, encoderRight) {
     ctx.fillStyle = 'red';   // Example for fill color
     // Draw a dot at the new position
     ctx.beginPath();
-    ctx.arc(x, y, 2, 0, 2 * Math.PI, true); // Draw a small circle (dot)
-    ctx.fill();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i < path.length; i++) {
+        ctx.lineTo(path[i].x, path[i].y);
+    }
+    ctx.stroke();
+    // ctx.arc(x, y, 2, 0, 2 * Math.PI, true); // Draw a small circle (dot)
+    // ctx.fill();
 }
 
 function adjustCanvasSize() {
@@ -200,10 +209,24 @@ function adjustCanvasSize() {
     var maxX = Math.max(x, canvas.width / 2);
     var maxY = Math.max(y, canvas.height / 2);
 
+    if(minX<0){
+        let offsetX = 100;
+        canvas.width += offsetX;
+        x += offsetX;
+        path.forEach(p => p.x += offsetX);
+    }
+
     if (maxX > canvas.width) {
         var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         canvas.width = maxX * 2;
         ctx.putImageData(imageData, 0, 0);
+    }
+
+    if(minY<0){
+        let offsetY = 100;
+        canvas.height += offsetY;
+        y += offsetY;
+        path.forEach(p => p.y += offsetY);
     }
 
     if (maxY > canvas.height) {
@@ -229,7 +252,7 @@ function centerCanvas() {
 
 // Function to normalize the value to a 0-255 range
 function normalizeValue(value) {
-    return Math.floor((value / 4000) * 255);
+    return Math.floor((value / 1000) * 255);
 }
 
 function updateGrid() {
@@ -242,7 +265,7 @@ function updateGrid() {
         let row = rows-1-Math.floor(i / cols);
 
         let intensity = normalizeValue(valueQueue[i]);
-        let color = `rgb(${intensity}, ${intensity}, ${intensity})`;
+        let color = `rgb(${255-intensity}, ${255-intensity}, ${255-intensity})`;
 
         // Fill the cell with the calculated color
         gctx.fillStyle = color;
