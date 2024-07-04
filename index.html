@@ -10,20 +10,20 @@
         <button id="toggleButton">Connect</button>
         <span id="status">Disconnected</span>
     </div>
-    <h1>ESP32 Sensor Data</h1>
+    <h1>IR Sensor Data</h1>
     <canvas id="gridCanvas" width="500" height="500"></canvas>
-    <!-- <p>Value 1: <span id="value1"></span></p>
-    <p>Value 2: <span id="value2"></span></p>
-    <p>Value 3: <span id="value3"></span></p>
-    <p>Value 4: <span id="value4"></span></p>
-    <p>Value 5: <span id="value5"></span></p>
-    <p>Value 6: <span id="value6"></span></p> -->
-
     <div>
-        <div>
-            <p>Encoder 1: <span id="Encoder1"></span></p>
-            <p>Encoder 2: <span id="Encoder2"></span></p>
+        <div class="encvalue">
+            <div>
+                <p>Original Encoder 1: <span id="Encoder1">0</span></p>
+                <p>Original Encoder 2: <span id="Encoder2">0</span></p>
+            </div>
+            <div>
+                <p>Current Encoder 1: <span id="curE1">0</span></p>
+                <p>Current Encoder 2: <span id="curE2">0</span></p>
+            </div>
         </div>
+        
         <div id="canvasContainer">
             <canvas id="canvas"></canvas>
         </div>

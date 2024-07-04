@@ -16,3 +16,8 @@
 #gridCanvas{
     border: 1px solid black;
 }
+
+.encvalue{
+    display: flex;
+    gap: 50px;
+}

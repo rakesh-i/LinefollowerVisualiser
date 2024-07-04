@@ -6,7 +6,7 @@ var connectionTimeout;
 var connectionTimeoutDuration = 3000; // 5 seconds
 
 var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
+var ctx = canvas.getContext('2d',{ willReadFrequently: true});
 var container = document.getElementById('canvasContainer');
 
 // Get the canvas and context
@@ -32,9 +32,16 @@ var prevEncoderLeft = 0;
 var prevEncoderRight = 0;
 
 // Distance between the wheels (wheelbase)
-var wheelBase = 400; // Adjust as needed
+var wheelBase = 575; // Adjust as needed
 
 let path = [{x:x, y:y}];
+
+var count = 0;
+
+var E1 = 0;
+var E2 = 0;
+var initValueE1 = 0;
+var initValueE2 = 0;
 
 function toggleWebSocket() {
     var ip = document.getElementById("ipAddress").value;
@@ -42,6 +49,7 @@ function toggleWebSocket() {
         // Close the WebSocket connection
         isError = false;
         webSocket.close();
+        count = 0;
         
     } else {
         // Open the WebSocket connection
@@ -65,14 +73,12 @@ function startWebSocket(ip) {
     // Handle incoming messages
     webSocket.onmessage = function(event) {
         var data = JSON.parse(event.data);
-        // document.getElementById("value1").innerText = data.value1;
-        // document.getElementById("value2").innerText = data.value2;
-        // document.getElementById("value3").innerText = data.value3;
-        // document.getElementById("value4").innerText = data.value4;
-        // document.getElementById("value5").innerText = data.value5;
-        // document.getElementById("value6").innerText = data.value6;
         document.getElementById("Encoder1").innerText = data.Encoder1;
         document.getElementById("Encoder2").innerText = data.Encoder2;
+        document.getElementById("curE1").innerText = E1;
+        document.getElementById("curE2").innerText = E2;
+
+
         
         if (data.value1 !== undefined) valueQueue.push(data.value1);
         if (data.value2 !== undefined) valueQueue.push(data.value2);
@@ -86,7 +92,16 @@ function startWebSocket(ip) {
         }
 
         if (data.Encoder1 !== undefined && data.Encoder2 !== undefined) {
-            updatePosition(data.Encoder1, data.Encoder2);
+            if(count==0){
+                E1 = data.Encoder1 - initValueE1;
+                E2 = data.Encoder2 - initValueE2;
+                clear();
+                count = 1;
+            }
+            E1 = data.Encoder1 - initValueE1;
+            E2 = data.Encoder2 - initValueE2;
+            
+            updatePosition(E1, E2);
         }
 
         resetMessageTimeout();
@@ -99,6 +114,7 @@ function startWebSocket(ip) {
     webSocket.onopen = function() {
         console.log("WebSocket connection opened.");
         isConnected = true;
+        clear();
         clearTimeout(connectionTimeout); // Clear the connection timeout
         updateStatus();
         resetMessageTimeout(); // Start the timeout when the connection is opened
@@ -143,6 +159,7 @@ function updateStatus() {
     if (isConnected) {
         statusElement.innerText = "Connected";
         buttonElement.innerText = "Disconnect";
+        
     } else {
         if(isError == true){
             statusElement.innerText = "Connection Failed";
@@ -280,18 +297,30 @@ function updateGrid() {
     }
 }
 
-
-document.getElementById("toggleButton").addEventListener("click", toggleWebSocket);
-
-document.getElementById("clearButton").addEventListener("click", function() {
+function clear(){
+    console.log("clear");
+    initValueE1 = Number(document.getElementById("Encoder1").textContent);
+    initValueE2 = Number(document.getElementById("Encoder2").textContent);
+    console.log(initValueE1, initValueE2);
+    E1 = 0;
+    E2 = 0;
+    prevEncoderLeft = 0;
+    prevEncoderRight = 0;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     x = canvas.width / 2;
     y = canvas.height / 2;
     theta = 0;
     prevEncoderLeft = 0;
     prevEncoderRight = 0;
+    path = [];
+    path = [{x:x, y:y}];
     centerCanvas();
-});
+}
+
+
+document.getElementById("toggleButton").addEventListener("click", toggleWebSocket);
+
+document.getElementById("clearButton").addEventListener("click", clear);
 
 document.getElementById("exportButton").addEventListener("click", function() {
     var tempCanvas = document.createElement('canvas');
@@ -321,6 +350,8 @@ document.getElementById("exportButton").addEventListener("click", function() {
 });
 
 
+
 // Initialize canvas
 ctx.beginPath();
 centerCanvas();
+clear();
