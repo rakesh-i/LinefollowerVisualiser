@@ -77,9 +77,7 @@ function startWebSocket(ip) {
         document.getElementById("Encoder2").innerText = data.Encoder2;
         document.getElementById("curE1").innerText = E1;
         document.getElementById("curE2").innerText = E2;
-
-
-        
+   
         if (data.value1 !== undefined) valueQueue.push(data.value1);
         if (data.value2 !== undefined) valueQueue.push(data.value2);
         if (data.value4 !== undefined) valueQueue.push(data.value4);
