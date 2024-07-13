@@ -5,6 +5,58 @@ var messageTimeout;
 var connectionTimeout;
 var connectionTimeoutDuration = 3000; // 5 seconds
 
+var c = 0;
+
+Chart.defaults.set('plugins.streaming', {
+    duration: 20000
+  });
+  
+  const ctxc = document.getElementById('myChart');
+  const config = {
+    type: 'line',
+    data: {
+      datasets: [
+        {
+          label: 'Dataset 1',
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          borderColor: 'rgb(54, 162, 235)',
+          cubicInterpolationMode: 'monotone',
+          pointRadius: 0,
+          pointStyle: 'circle',
+          data: []
+        }
+      ]
+    },
+    options: {
+    
+      scales: {
+        x: {
+          type: 'realtime',
+          realtime: {
+            refresh: 10,
+            // delay:500,
+            duration:5000,
+            onRefresh: chart => {
+                const now = Date.now();
+              chart.data.datasets.forEach(dataset => {
+            //   console.log(Date.now());
+                dataset.data.push({
+                  x: now,
+                  y: E1
+                });
+               
+              });
+            }
+          }
+        }
+      }
+    }
+  };
+  const chart = new Chart(ctxc,config 
+    
+  );
+
+
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d',{ willReadFrequently: true});
 var container = document.getElementById('canvasContainer');
@@ -72,6 +124,7 @@ function startWebSocket(ip) {
 
     // Handle incoming messages
     webSocket.onmessage = function(event) {
+        c++;
         var data = JSON.parse(event.data);
         document.getElementById("Encoder1").innerText = data.Encoder1;
         document.getElementById("Encoder2").innerText = data.Encoder2;
