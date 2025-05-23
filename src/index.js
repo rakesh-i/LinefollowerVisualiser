@@ -1,3 +1,9 @@
+import "./styles.css";
+
+import con from './svg/connected.svg';
+import err from './svg/retry.svg';
+import dis from './svg/disconnected.svg';
+
 var webSocket;
 var isConnected = false;
 var isError = false;
@@ -5,6 +11,21 @@ var messageTimeout;
 var connectionTimeout;
 var connectionTimeoutDuration = 3000;
 var manualMode = false;
+
+const connectButton = document.getElementById("toggleButton");
+
+const imgCon = document.createElement("img");
+const imgDis = document.createElement("img");
+const imgErr = document.createElement("img");
+imgCon.src = con;
+imgCon.width = 24;
+imgCon.height = 24;
+imgDis.src = dis;
+imgDis.width = 24;
+imgDis.height = 24;
+imgErr.src = err;
+imgErr.width = 24;
+imgErr.height = 24;
 
 var c = 0;
 let speed = 70;
@@ -70,6 +91,70 @@ var E2 = 0;
 var initValueE1 = 0;
 var initValueE2 = 0;
 
+const tabRc = document.getElementById("rc");
+const tabMotor = document.getElementById("motor");
+const tabPid = document.getElementById("pid");
+const tabTurn = document.getElementById("turn");
+const tabMaze = document.getElementById("maze");
+
+ 
+tabRc.addEventListener("click", function(){
+    document.querySelectorAll('.tabPage').forEach(page => {
+        page.style.display = 'none';
+        
+    });
+    document.querySelectorAll('.tabs').forEach(tab =>{
+        tab.classList.remove('selected');
+    });
+    document.getElementById("rcPage").style.display = "block";
+    tabRc.classList.add('selected');
+});
+
+tabMotor.addEventListener("click", function(){
+    document.querySelectorAll('.tabPage').forEach(page => {
+        page.style.display = 'none';
+    });
+    document.querySelectorAll('.tabs').forEach(tab =>{
+        tab.classList.remove('selected');
+    });
+    document.getElementById("motorPage").style.display = "block";
+    tabMotor.classList.add('selected');
+});
+
+tabPid.addEventListener("click", function(){
+    document.querySelectorAll('.tabPage').forEach(page => {
+        page.style.display = 'none';
+        
+    });
+    document.querySelectorAll('.tabs').forEach(tab =>{
+        tab.classList.remove('selected');
+    });
+    document.getElementById("pidPage").style.display = "block";
+    tabPid.classList.add('selected');
+});
+
+tabTurn.addEventListener("click", function(){
+    document.querySelectorAll('.tabPage').forEach(page => {
+        page.style.display = 'none';
+    });
+    document.querySelectorAll('.tabs').forEach(tab =>{
+        tab.classList.remove('selected');
+    });
+    document.getElementById("turnPage").style.display = "block";
+    tabTurn.classList.add('selected');
+});
+
+tabMaze.addEventListener("click", function(){
+    document.querySelectorAll('.tabPage').forEach(page => {
+        page.style.display = 'none';
+    });
+    document.querySelectorAll('.tabs').forEach(tab =>{
+        tab.classList.remove('selected');
+    });
+    document.getElementById("mazePage").style.display = "block";
+    tabMaze.classList.add('selected');
+});
+
 function toggleWebSocket() {
     var ip = document.getElementById("ipAddress").value;
     if (isConnected) {
@@ -80,6 +165,8 @@ function toggleWebSocket() {
         
     } else {
         // Open the WebSocket connection
+        connectButton.classList.add("trying");
+        connectButton.innerText = "Connecting"
         startWebSocket(ip);
     }
 }
@@ -138,6 +225,7 @@ function startWebSocket(ip) {
 
     // Handle connection open event
     webSocket.onopen = function() {
+        connectButton.classList.remove("trying");
         console.log("WebSocket connection opened.");
         isConnected = true;
         clear();
@@ -158,6 +246,7 @@ function startWebSocket(ip) {
     // Handle connection error event
     webSocket.onerror = function() {
         console.log("WebSocket connection error.");
+        connectButton.classList.remove("trying");
         isConnected = false;
         isError = true;
         updateStatus();
@@ -171,18 +260,76 @@ function sendCommand(cmd) {
     }
   }
 
+const directionMap = {
+  w: "forward",
+  a: "left",
+  s: "backward",
+  d: "right"
+};
+
+const buttonMap = {
+  forward: document.getElementById("btn-up"),
+  backward: document.getElementById("btn-down"),
+  left: document.getElementById("btn-left"),
+  right: document.getElementById("btn-right")
+};
+
 document.addEventListener("keydown", (e) => {
-switch (e.key.toLowerCase()) {
-    case "w": sendCommand("forward"); break;
-    case "s": sendCommand("backward"); break;
-    case "a": sendCommand("right"); break;
-    case "d": sendCommand("left"); break;
-}
+  const key = e.key.toLowerCase();
+  const direction = directionMap[key];
+  if (direction) {
+    sendCommand(direction);
+
+    // Add visual effect
+    const button = buttonMap[direction];
+    button?.classList.add("pressed");
+  }
 });
 
-document.addEventListener("keyup", () => {
+document.addEventListener("keyup", (e) => {
+  const key = e.key.toLowerCase();
+  const direction = directionMap[key];
+  if (direction) {
     sendCommand("stop");
+
+    // Remove visual effect
+    const button = buttonMap[direction];
+    button?.classList.remove("pressed");
+  }
 });
+
+// Handle mouse and touch input on buttons
+const buttons = document.querySelectorAll(".arrow");
+
+buttons.forEach(button => {
+  const direction = button.dataset.direction;
+
+  button.addEventListener("mousedown", () => {
+    sendCommand(direction);
+    button.classList.add("pressed");
+  });
+
+  button.addEventListener("mouseup", () => {
+    sendCommand("stop");
+    button.classList.remove("pressed");
+  });
+
+  button.addEventListener("mouseleave", () => {
+    button.classList.remove("pressed");
+  });
+
+  button.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    sendCommand(direction);
+    button.classList.add("pressed");
+  });
+
+  button.addEventListener("touchend", () => {
+    sendCommand("stop");
+    button.classList.remove("pressed");
+  });
+});
+
 
 function setPid(){
     ki = kiele.value;
@@ -263,20 +410,23 @@ function resetMessageTimeout() {
 
 function updateStatus() {
     var statusElement = document.getElementById("status");
-    var buttonElement = document.getElementById("toggleButton");
+    statusElement.innerHTML = '';
+    statusElement.classList.remove('failed');
+    statusElement.classList.remove('success');
     if (isConnected) {
-        statusElement.innerText = "Connected";
-        buttonElement.innerText = "Disconnect";
-        
+        // statusElement.innerHTML = "Connected";
+        statusElement.appendChild(imgCon);
+        connectButton.innerText = "Disconnect";
+        statusElement.classList.add('success');
     } else {
         if(isError == true){
-            statusElement.innerText = "Connection Failed";
-            buttonElement.innerText = "Retry";
+            statusElement.appendChild(imgErr);
+            connectButton.innerText = "Retry";
             
         }
         else{
-            statusElement.innerText = "Disconnected";
-            buttonElement.innerText = "Connect";
+            statusElement.appendChild(imgDis);
+            connectButton.innerText = "Connect";
             isError = false;
             
         }
@@ -426,7 +576,28 @@ function clear(){
 
 document.getElementById("toggleButton").addEventListener("click", toggleWebSocket);
 
-document.getElementById("clearButton").addEventListener("click", clear);
+document.getElementById("manMode").addEventListener("click", toggleManual);
+
+document.getElementById("speed").addEventListener("input", function(){
+    speed = this.value;
+    document.getElementById("speedVal").textContent = this.value;
+});
+
+document.getElementById("encoderMove").addEventListener("click", encoderMove);
+
+document.getElementById("setPid").addEventListener("click", setPid);
+
+document.getElementById("calibrate").addEventListener("click", calibrate);
+
+document.getElementById("race").addEventListener("click", race);
+
+document.getElementById("mazeEx").addEventListener("click", explore);
+
+document.getElementById("race").addEventListener("click", race);
+
+document.getElementById("shortest").addEventListener("click", shortestPath);
+
+document.getElementsByClassName('up').addEventListener("click", )
 
 document.getElementById("exportButton").addEventListener("click", function() {
     var tempCanvas = document.createElement('canvas');
@@ -461,3 +632,4 @@ document.getElementById("exportButton").addEventListener("click", function() {
 ctx.beginPath();
 centerCanvas();
 clear();
+

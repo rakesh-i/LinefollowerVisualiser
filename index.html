@@ -2,23 +2,74 @@
 <html>
 <head>
     <title>ESP32 Sensor Data</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styleS.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.3.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@1.27.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@2.0.0"></script>
 </head>
 <body>
-    <div>
+    <!-- <div>
         <canvas id="myChart"></canvas>
-    </div>
+    </div> -->
     <div>
         <input type="text" name="ip" id="ipAddress" placeholder="Enter IP Address" value="192.168.0.100" >
         <button id="toggleButton">Connect</button>
         <span id="status">Disconnected</span>
     </div>
+    <h1>PID TEST</h1>
+    <div id="pidVal">
+        <div>
+            <input type="number" name="speed" id="speed" step="5" value="50" min="0">
+            <label for="speed">SPEED</label>
+        </div>
+        <div>
+            <input type="number" name="KP" id="kp" step="0.1" value="0" min="0">
+            <label for="kp">KP</label>
+        </div>
+        <div>
+            <input type="number" name="KD" id="kd" step="0.1" value="0" min="0">
+            <label for="kd">KD</label>
+        </div>
+        <div>
+            <input type="number" name="KI" id="ki" step="0.0001" value="0" min="0">
+            <label for="ki">KI</label>
+        </div>
+        <div>
+            <input type="number" name="mxspeed" id="mxspeed" step="5" value="50" min="0">
+            <label for="mxspeed">CORRECTION SPEED</label>
+        </div>
+        <button id="setpid" onclick="setPid()">SET</button>
+    </div>
+    <h1>REMOTE CONTROL</h1>
+    <button id="manMode" onclick="toggleManual()">Manual Mode OFF</button>
+    <label for="speed">Speed:</label>
+    <input type="range" id="speed" min="0" max="255" value="70" oninput="updateSpeed(this.value)">
+    <span id="speedVal">70</span>
+    <button onclick="calibrate()">Calibrate</button>
+    <button onclick="race()">Race</button>
+    <h1>TURN TEST</h1>
+    <div id="setencoder">
+        <div>
+            <input type="number" name="en1" id="en1" step="5" value="0">
+            <label for="en1">ENCODER 1</label>
+        </div>
+        <div>
+            <input type="number" name="en2" id="en2" step="5" value="0">
+            <label for="en2">ENCODER 2</label>
+        </div>
+        <div>
+            <input type="number" name="ms" id="ms" step="50" value="100" min="50">
+            <label for="ms">LOOP TIME</label>
+        </div>
+        <button id="encodermove" onclick="encoderMove()">MOVE</button>
+    </div>
+    <h1>MAZE</h1>
+    <button id="mazeEx" onclick="explore()">Explore</button>
+    <button id="shortest" onclick="shortestPath()">Shortest path</button>
     <h1>IR Sensor Data</h1>
     <canvas id="gridCanvas" width="500" height="500"></canvas>
+    <div id="raw"></div>
     <div>
         <div class="encvalue">
             <div>
