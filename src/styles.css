@@ -153,6 +153,12 @@ header{
     gap: 5px;
 }
 
+#raw{
+    display: flex;
+    justify-content: space-around;
+    
+}
+
 .arrow-buttons {
     display: flex;
     flex-direction: column;

@@ -30,8 +30,13 @@ imgErr.height = 24;
 var c = 0;
 let speed = 70;
 
+let rawVal1 = document.getElementById("ir1");
+let rawVal2 = document.getElementById("ir2");
+let rawVal3 = document.getElementById("ir3");
+let rawVal4 = document.getElementById("ir4");
+let rawVal5 = document.getElementById("ir5");
+
 let manModebut = document.getElementById("manMode");
-let rawVal = document.getElementById("raw");
 let spele = document.getElementById("speed");
 let kiele = document.getElementById("ki");
 let kpele = document.getElementById("kp");
@@ -330,7 +335,6 @@ buttons.forEach(button => {
   });
 });
 
-
 function setPid(){
     ki = kiele.value;
     kp = kpele.value;
@@ -377,11 +381,6 @@ function race(){
     }
 }
 
-function updateSpeed(val) {
-    speed = val;
-    document.getElementById("speedVal").textContent = val;
-}
-
 function toggleManual() {
     if (manualMode) {
       webSocket.send("1:off");
@@ -396,16 +395,14 @@ function toggleManual() {
 
 
 function resetMessageTimeout() {
-    // Clear any existing timeout
     clearTimeout(messageTimeout);
-    // Set a new timeout to trigger if no message is received within 5 seconds
     messageTimeout = setTimeout(function() {
         console.log("No message received in 5 seconds. Connection failed.");
         isError = true;
         isConnected = false;
         updateStatus(true);
         webSocket.close();
-    }, 5000); // 5 seconds
+    }, 5000);
 }
 
 function updateStatus() {
@@ -414,7 +411,6 @@ function updateStatus() {
     statusElement.classList.remove('failed');
     statusElement.classList.remove('success');
     if (isConnected) {
-        // statusElement.innerHTML = "Connected";
         statusElement.appendChild(imgCon);
         connectButton.innerText = "Disconnect";
         statusElement.classList.add('success');
@@ -428,11 +424,79 @@ function updateStatus() {
             statusElement.appendChild(imgDis);
             connectButton.innerText = "Connect";
             isError = false;
-            
         }
-        
     }
 }
+
+function updateGrid() {
+    gctx.clearRect(0, 0, gridcanvas.width, gridcanvas.height);
+
+    for (let i = valueQueue.length-1; i >=0; i--) {
+        let col = i % cols;
+        let row = rows-1-Math.floor(i / cols);
+
+        let color = `rgb(${255-valueQueue[i]}, ${255-valueQueue[i]}, ${255-valueQueue[i]})`;
+
+        gctx.fillStyle = color;
+        gctx.fillRect(col * cellWidth, row * cellHeight, cellWidth, cellHeight);
+
+    }
+
+    rawVal1.textContent = `${valueQueue[valueQueue.length-5]}`
+    rawVal2.textContent = `${valueQueue[valueQueue.length-4]}`
+    rawVal3.textContent = `${valueQueue[valueQueue.length-3]}`
+    rawVal4.textContent = `${valueQueue[valueQueue.length-2]}`
+    rawVal5.textContent = `${valueQueue[valueQueue.length-1]}`
+
+}
+
+document.getElementById("toggleButton").addEventListener("click", toggleWebSocket);
+
+document.getElementById("manMode").addEventListener("click", toggleManual);
+
+document.getElementById("speed").addEventListener("input", function(){
+    speed = this.value;
+    document.getElementById("speedVal").textContent = this.value;
+});
+
+document.getElementById("encoderMove").addEventListener("click", encoderMove);
+
+document.getElementById("setPid").addEventListener("click", setPid);
+
+document.getElementById("calibrate").addEventListener("click", calibrate);
+
+document.getElementById("race").addEventListener("click", race);
+
+document.getElementById("mazeEx").addEventListener("click", explore);
+
+document.getElementById("race").addEventListener("click", race);
+
+document.getElementById("shortest").addEventListener("click", shortestPath);
+
+document.getElementsByClassName('up').addEventListener("click", )
+
+document.getElementById("exportButton").addEventListener("click", function() {
+    var tempCanvas = document.createElement('canvas');
+    var tempCtx = tempCanvas.getContext('2d');
+    
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+
+    tempCtx.fillStyle = 'white'; 
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+    setTimeout(function() {
+        tempCtx.drawImage(canvas, 0, 0);
+
+        var dataURL = tempCanvas.toDataURL("image/jpeg");
+        var a = document.createElement('a');
+        a.href = dataURL;
+        a.download = 'canvas.jpeg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }, 100); 
+});
 
 function updatePosition(encoderLeft, encoderRight) {
     // Calculate the distance traveled by each wheel
@@ -525,35 +589,6 @@ function centerCanvas() {
     container.scrollTop = offsetY;
 }
 
-// Function to normalize the value to a 0-255 range
-function normalizeValue(value) {
-    return Math.floor((value / 255) * 255);
-}
-
-function updateGrid() {
-    // Clear the canvas
-    gctx.clearRect(0, 0, gridcanvas.width, gridcanvas.height);
-
-    // Iterate over the queue and draw the cells
-    for (let i = valueQueue.length-1; i >=0; i--) {
-        let col = i % cols;
-        let row = rows-1-Math.floor(i / cols);
-
-        // let intensity = normalizeValue(valueQueue[i]);
-        let color = `rgb(${255-valueQueue[i]}, ${255-valueQueue[i]}, ${255-valueQueue[i]})`;
-
-        // Fill the cell with the calculated color
-        gctx.fillStyle = color;
-        gctx.fillRect(col * cellWidth, row * cellHeight, cellWidth, cellHeight);
-
-    }
-    rawVal.textContent = `${valueQueue[valueQueue.length-5]}\n
-    ${valueQueue[valueQueue.length-4]}\n
-    ${valueQueue[valueQueue.length-3]}\n
-    ${valueQueue[valueQueue.length-2]}\n
-    ${valueQueue[valueQueue.length-1]}`;
-}
-
 function clear(){
     console.log("clear");
     initValueE1 = Number(document.getElementById("Encoder1").textContent);
@@ -574,61 +609,7 @@ function clear(){
     centerCanvas();
 }
 
-document.getElementById("toggleButton").addEventListener("click", toggleWebSocket);
 
-document.getElementById("manMode").addEventListener("click", toggleManual);
-
-document.getElementById("speed").addEventListener("input", function(){
-    speed = this.value;
-    document.getElementById("speedVal").textContent = this.value;
-});
-
-document.getElementById("encoderMove").addEventListener("click", encoderMove);
-
-document.getElementById("setPid").addEventListener("click", setPid);
-
-document.getElementById("calibrate").addEventListener("click", calibrate);
-
-document.getElementById("race").addEventListener("click", race);
-
-document.getElementById("mazeEx").addEventListener("click", explore);
-
-document.getElementById("race").addEventListener("click", race);
-
-document.getElementById("shortest").addEventListener("click", shortestPath);
-
-document.getElementsByClassName('up').addEventListener("click", )
-
-document.getElementById("exportButton").addEventListener("click", function() {
-    var tempCanvas = document.createElement('canvas');
-    var tempCtx = tempCanvas.getContext('2d');
-    
-    // Set the dimensions of the temporary canvas
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-
-    // Fill the temporary canvas with the desired background color
-    tempCtx.fillStyle = 'white'; // Replace 'white' with your desired background color
-    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-    // Draw the current canvas content onto the temporary canvas
-    setTimeout(function() {
-        tempCtx.drawImage(canvas, 0, 0);
-
-        // Export the temporary canvas as JPEG
-        var dataURL = tempCanvas.toDataURL("image/jpeg");
-        var a = document.createElement('a');
-        a.href = dataURL;
-        a.download = 'canvas.jpeg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }, 100); // Adjust delay as needed
-});
-
-
-
-// Initialize canvas
 ctx.beginPath();
 centerCanvas();
 clear();
