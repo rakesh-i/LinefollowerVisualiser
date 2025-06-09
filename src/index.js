@@ -4,6 +4,12 @@ import con from './svg/connected.svg';
 import err from './svg/retry.svg';
 import dis from './svg/disconnected.svg';
 
+const messageCountEl = document.getElementById('messageCount');
+const frequencyEl = document.getElementById('frequency');
+
+let messageCount = 0;
+let lastCount = 0;
+
 var webSocket;
 var isConnected = false;
 var isError = false;
@@ -37,11 +43,16 @@ let rawVal4 = document.getElementById("ir4");
 let rawVal5 = document.getElementById("ir5");
 
 let manModebut = document.getElementById("manMode");
-let spele = document.getElementById("speed");
+let spele = document.getElementById("speedr");
 let kiele = document.getElementById("ki");
 let kpele = document.getElementById("kp");
 let kdele = document.getElementById("kd");
 let mxspele = document.getElementById("mxspeed");
+let calSpeedele = document.getElementById("calSpeed");
+let calTimeele = document.getElementById("calTime");
+
+let calTime = 100;
+let calSpeed = 50;
 
 let en1 = document.getElementById('en1');
 let en2 = document.getElementById('en2');
@@ -101,6 +112,7 @@ const tabMotor = document.getElementById("motor");
 const tabPid = document.getElementById("pid");
 const tabTurn = document.getElementById("turn");
 const tabMaze = document.getElementById("maze");
+const tabDebug = document.getElementById("debug");
 
  
 tabRc.addEventListener("click", function(){
@@ -160,6 +172,18 @@ tabMaze.addEventListener("click", function(){
     tabMaze.classList.add('selected');
 });
 
+tabDebug.addEventListener("click", function(){
+    document.querySelectorAll('.tabPage').forEach(page => {
+        page.style.display = 'none';
+        
+    });
+    document.querySelectorAll('.tabs').forEach(tab =>{
+        tab.classList.remove('selected');
+    });
+    document.getElementById("debugPage").style.display = "block";
+    tabDebug.classList.add('selected');
+});
+
 function toggleWebSocket() {
     var ip = document.getElementById("ipAddress").value;
     if (isConnected) {
@@ -191,41 +215,62 @@ function startWebSocket(ip) {
 
     // Handle incoming messages
     webSocket.onmessage = function(event) {
+        messageCount++;
         c++;
         var data = JSON.parse(event.data);
-        document.getElementById("Encoder1").innerText = data.Encoder1;
-        document.getElementById("Encoder2").innerText = data.Encoder2;
-        document.getElementById("curE1").innerText = E1;
-        document.getElementById("curE2").innerText = E2;
-   
-        if (data.value6 !== undefined) valueQueue.push(data.value6);
-        if (data.value5 !== undefined) valueQueue.push(data.value5);
-        if (data.value4 !== undefined) valueQueue.push(data.value4);
-        if (data.value2 !== undefined) valueQueue.push(data.value2);
-        if (data.value1 !== undefined) valueQueue.push(data.value1);
+        if(data.type === "init"){
+            spele.value = data.pidSpeed;
+            mxspele.value = data.mxCurSpeed;
+            kpele.value = data.kp;
+            kdele.value = data.kd;
+            kiele.value = data.ki;
+            calSpeedele.value = data.calSpeed;
+            calTimeele.value = data.calTime;
 
-        // Maintain the queue size to fit within the grid
-        while (valueQueue.length > cols * rows) {
-            valueQueue.shift();
+            pidSpeed = data.pidSpeed;
+            mxCurSpeed = data.mxCurSpeed;
+            ki = data.ki;
+            kp = data.kp;
+            kd = data.kp;
+            calTime = data.calSpeed;
+            calSpeed = data.calTime;
         }
+        else{
+            document.getElementById("Encoder1").innerText = data.Encoder1;
+            document.getElementById("Encoder2").innerText = data.Encoder2;
+            document.getElementById("curE1").innerText = E1;
+            document.getElementById("curE2").innerText = E2;
+    
+            if (data.value6 !== undefined) valueQueue.push(data.value6*255);
+            if (data.value5 !== undefined) valueQueue.push(data.value5);
+            if (data.value4 !== undefined) valueQueue.push(data.value4);
+            if (data.value2 !== undefined) valueQueue.push(data.value2);
+            if (data.value1 !== undefined) valueQueue.push(data.value1*255);
 
-        if (data.Encoder1 !== undefined && data.Encoder2 !== undefined) {
-            if(count==0){
+            // Maintain the queue size to fit within the grid
+            while (valueQueue.length > cols * rows) {
+                valueQueue.shift();
+            }
+
+            if (data.Encoder1 !== undefined && data.Encoder2 !== undefined) {
+                if(count==0){
+                    E1 = data.Encoder1 - initValueE1;
+                    E2 = data.Encoder2 - initValueE2;
+                    clear();
+                    count = 1;
+                }
                 E1 = data.Encoder1 - initValueE1;
                 E2 = data.Encoder2 - initValueE2;
-                clear();
-                count = 1;
+                
+                // updatePosition(E1, E2);
             }
-            E1 = data.Encoder1 - initValueE1;
-            E2 = data.Encoder2 - initValueE2;
-            
-            // updatePosition(E1, E2);
+
+            resetMessageTimeout();
+
+            // Update the grid
+            updateGrid();
         }
-
-        resetMessageTimeout();
-
-        // Update the grid
-        updateGrid();
+        
     };
 
     // Handle connection open event
@@ -236,6 +281,8 @@ function startWebSocket(ip) {
         clear();
         clearTimeout(connectionTimeout); // Clear the connection timeout
         updateStatus();
+
+
         resetMessageTimeout(); // Start the timeout when the connection is opened
     };
 
@@ -259,6 +306,15 @@ function startWebSocket(ip) {
         clearTimeout(connectionTimeout); // Clear the connection timeout
     };
 }
+
+setInterval(() => {
+    const freq = messageCount - lastCount;
+    lastCount = messageCount;
+
+    messageCountEl.textContent = messageCount;
+    frequencyEl.textContent = freq;
+}, 1000);
+
 function sendCommand(cmd) {
     if (webSocket.readyState === WebSocket.OPEN) {
       webSocket.send(`2:${cmd},speed:${speed}`);
@@ -370,8 +426,10 @@ function encoderMove(){
 }
 
 function calibrate(){
+    calTime = calTimeele.value;
+    calSpeed = calSpeedele.value;
     if (webSocket.readyState === WebSocket.OPEN) {
-        webSocket.send("3");
+        webSocket.send(`3:calSpeed:${calSpeed}, calTime:${calTime}`);
     }
 }
 
@@ -472,8 +530,6 @@ document.getElementById("mazeEx").addEventListener("click", explore);
 document.getElementById("race").addEventListener("click", race);
 
 document.getElementById("shortest").addEventListener("click", shortestPath);
-
-document.getElementsByClassName('up').addEventListener("click", )
 
 document.getElementById("exportButton").addEventListener("click", function() {
     var tempCanvas = document.createElement('canvas');

@@ -32,6 +32,9 @@
             <div id="maze" class="tabs">
                 Maze
             </div>
+            <div id="debug" class="tabs">
+                Debug
+            </div>
         </div>
         <div id='stcont'>
             <div id="status" class="idle">
@@ -83,8 +86,8 @@
                     <div id="pidVal">
                         <div id="pidValCol1">
                             <div>
-                                <input type="number" name="speed" id="speed" step="5" value="50" min="0">
-                                <label for="speed">SPEED</label>
+                                <input type="number" name="speedr" id="speedr" step="5" value="50" min="0">
+                                <label for="speedr">SPEED</label>
                             </div>
                             <div>
                                 <input type="number" name="KP" id="kp" step="0.1" value="0" min="0">
@@ -105,7 +108,18 @@
                         </div>
                         <button id="setPid" >SET</button>
                     </div>
-                    <button id="calibrate">Calibrate</button>
+                    <div id="calBox">
+                        <div>
+                            <input type="number" name="calSpeed" id="calSpeed" step="5" value="50" min="0">
+                            <label for="calSpeed">Calibration Speed</label>
+                        </div>
+                        <div>
+                            <input type="number" name="calTime" id="calTime" step="10" value="100" min="100">
+                            <label for="calTime">Calibration Time</label>
+                        </div>
+                        <button id="calibrate">Calibrate</button>
+                    </div>
+                   
                     <button id="race">Race</button>
                     <h1>IR Sensor Data</h1>
                     <canvas id="gridCanvas" width="500" height="500"></canvas>
@@ -141,13 +155,17 @@
         </div>
 
         <div id="turnPage" class="tabPage" style="display: none;">
-
         </div>
 
         <div id="mazePage" class="tabPage" style="display: none;">
             <h1>MAZE</h1>
             <button id="mazeEx" >Explore</button>
             <button id="shortest" >Shortest path</button>
+        </div>
+        <div id="debugPage" class="tabPage", style="display: none;">
+            <h2>WebSocket Message Frequency Monitor</h2>
+            <p>Messages received: <span id="messageCount">0</span></p>
+            <p>Frequency: <span id="frequency">0</span> messages/second</p>
         </div>
     </div>
 </body>

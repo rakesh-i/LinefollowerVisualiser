@@ -136,12 +136,14 @@ header{
     display: flex;
     flex-direction: column;
     justify-content: center;
-    width: 420px;
+    width: 450px;
     gap: 10px;
-    padding: 10px;
+    /* padding: 10px; */
 }
 
 #pidVal{
+    border: 2px solid red;
+    padding: 10px;
     display: flex;
     justify-content: space-between;
 }
@@ -151,6 +153,14 @@ header{
     flex-direction: column;
     justify-content: center;
     gap: 5px;
+}
+
+#calBox{
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 2px solid red;
 }
 
 #raw{
