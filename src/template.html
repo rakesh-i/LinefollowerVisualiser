@@ -122,13 +122,19 @@
                    
                     <button id="race">Race</button>
                     <h1>IR Sensor Data</h1>
-                    <canvas id="gridCanvas" width="500" height="500"></canvas>
+                    <canvas id="gridCanvas" width="500" height="250"></canvas>
                     <div id="raw">
                         <div id="ir1"></div>
                         <div id="ir2"></div>
                         <div id="ir3"></div>
                         <div id="ir4"></div>
                         <div id="ir5"></div>
+                    </div>
+                    <div id="linePos">
+                        <div id="track">
+                            <div id="indicator"></div>
+                        </div>
+                        <div id="valueDisplay">Line: 0</div>
                     </div>
                     <div style="display: none;">
                         <div class="encvalue">
@@ -166,6 +172,7 @@
             <h2>WebSocket Message Frequency Monitor</h2>
             <p>Messages received: <span id="messageCount">0</span></p>
             <p>Frequency: <span id="frequency">0</span> messages/second</p>
+            <h1 id="linepos"></h1>
         </div>
     </div>
 </body>

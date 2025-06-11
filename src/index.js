@@ -7,6 +7,10 @@ import dis from './svg/disconnected.svg';
 const messageCountEl = document.getElementById('messageCount');
 const frequencyEl = document.getElementById('frequency');
 
+const indicator = document.getElementById('indicator');
+const valueDisplay = document.getElementById('valueDisplay');
+let smoothed = 0;
+
 let messageCount = 0;
 let lastCount = 0;
 
@@ -79,7 +83,7 @@ var gctx = gridcanvas.getContext('2d');
 
 // Grid dimensions
 const cols = 5;
-const rows = 100;
+const rows = 50;
 const cellWidth = 100;
 const cellHeight = 5;
 
@@ -246,6 +250,34 @@ function startWebSocket(ip) {
             if (data.value4 !== undefined) valueQueue.push(data.value4);
             if (data.value2 !== undefined) valueQueue.push(data.value2);
             if (data.value1 !== undefined) valueQueue.push(data.value1*255);
+
+            let avgNum = 0;
+            let avgDen = 0;
+
+            avgNum += data.value5 * 2 * 255;
+            avgNum += data.value4 * 1 * 255;
+            avgNum += data.value2 * 0 * 255;
+            avgDen += data.value5;
+            avgDen += data.value4;
+            avgDen += data.value2;
+            let line  = avgNum/avgDen;
+            line = line-(255*2/2);
+    
+            let l = document.getElementById("linepos");
+            l.textContent = `${line}`;
+            
+            
+            smoothed = smoothed*(1-.2)+line*.2;
+
+            line = Math.max(-255, Math.min(255, smoothed));
+
+            // Map value (-255 to 255) to position (0 to 290) inside the track
+            const trackWidth = 450;
+            const maxOffset = trackWidth - 10;
+            const position = ((line + 255) / 510) * maxOffset;
+
+            indicator.style.left = position + 'px';
+            valueDisplay.textContent = `Line: ${line}`;
 
             // Maintain the queue size to fit within the grid
             while (valueQueue.length > cols * rows) {
